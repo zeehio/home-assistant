@@ -67,6 +67,7 @@ async def test_login_error(hass, hassio_client_supervisor):
 
         # Check we got right response
         assert resp.status == 401
+        assert resp.reason == "invalid user/password"
         mock_login.assert_called_with("test", "123456")
 
 
