@@ -51,7 +51,7 @@ class PollBot(BaseTelegramBotEntity):
 
     def __init__(self, hass, bot, config):
         """Create Application to poll for updates."""
-        super().__init__(hass, config)
+        super().__init__(hass, config, bot.username)
         self.bot = bot
         self.application = ApplicationBuilder().bot(self.bot).build()
         self.application.add_handler(TypeHandler(Update, self.handle_update))
