@@ -42,11 +42,11 @@ class MediaSourceOptions(TypedDict):
     bot_name: str
 
 
-def download_file_id(bot: telegram.Bot, file_id: str) -> bytes:
+async def download_file_id(bot: telegram.Bot, file_id: str) -> bytes:
     """Use the bot to download the file_id and return its contents."""
-    telegram_file = bot.get_file(file_id=file_id)
+    telegram_file = await bot.get_file(file_id=file_id)
     data = BytesIO()
-    telegram_file.download(out=data)
+    await telegram_file.download_to_memory(out=data)
     return data.getvalue()
 
 
@@ -68,14 +68,12 @@ class TelegramManager:
         filename = media["file_id"]
         # Is file already in memory
         if filename not in self.mem_cache:
-            filename = await self.hass.async_add_executor_job(
-                partial(self._download_file_id, media=media)
-            )
+            filename = await self._download_file_id(media=media)
         return get_url(self.hass) + f"/api/telegram_proxy/{filename}"
 
-    def _download_file_id(self, media) -> str:
+    async def _download_file_id(self, media) -> str:
         bot = self.bots[media["bot_name"]]
-        data = download_file_id(bot, media["file_id"])
+        data = await download_file_id(bot, media["file_id"])
         mime_type = media["mime_type"]
         # evict oldest if deque is full:
         if len(self.mem_cache_entries) == self.mem_cache_entries.maxlen:

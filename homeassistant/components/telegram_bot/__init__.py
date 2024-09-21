@@ -1085,7 +1085,7 @@ class BaseTelegramBotEntity:
                 update.callback_query
             )
         elif update.effective_message:
-            event_type, event_data = self._get_message_event_data(
+            event_type, event_data = await self._get_message_event_data(
                 update.effective_message
             )
         else:
@@ -1107,7 +1107,7 @@ class BaseTelegramBotEntity:
         args = command_parts[1:]
         return {ATTR_COMMAND: command, ATTR_ARGS: args}
 
-    def _get_message_event_data(self, message: Message) -> tuple[str, dict[str, Any]]:
+    async def _get_message_event_data(self, message: Message) -> tuple[str, dict[str, Any]]:
         event_data: dict[str, Any] = {
             ATTR_MSGID: message.message_id,
             ATTR_CHAT_ID: message.chat.id,
@@ -1118,7 +1118,7 @@ class BaseTelegramBotEntity:
             event_type = EVENT_TELEGRAM_COMMAND
             event_data.update(self._get_command_event_data(message.text))
         elif message.voice is not None:
-            file = message.voice.get_file()
+            file = await message.voice.get_file()
             event_type = EVENT_TELEGRAM_VOICE
             event_data[ATTR_TEXT] = message.text
             event_data[ATTR_MEDIA_URL] = generate_media_source_id(
